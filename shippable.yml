@@ -1,0 +1,87 @@
+resources:
+  - name: ric03uec_app
+    type: gitRepo
+    repoPath: ric03uec/app
+    configuration:
+      integrationName: ric03uec_github
+      branches:
+        only: master
+    initialVersion:
+      sha: master
+      
+pipelines:
+  - name: build_infra
+    steps:
+      - name: bootstrap
+        type: bash
+        configuration:
+          affinityGroup: build
+          #nodePool: kermit_centos_pool
+        requires:
+          resources:
+            - ric03uec_app
+        execution:
+          onExecute:
+            - printenv
+            - echo "Some file content" >> $STEP_WORKSPACE_DIR/step_output.txt
+
+      - name: test_func_next
+        type: bash
+        configuration:
+          affinityGroup: build
+        triggeredBy:
+          steps:
+            - bootstrap
+        execution:
+          onExecute:
+            - printenv
+
+      - name: parallel_1
+        type: bash
+        triggeredBy:
+          steps:
+            - test_func_next
+        execution:
+          onExecute:
+            - printenv
+            - echo $imageTag
+
+      - name: parallel_2
+        type: bash
+        triggeredBy:
+          steps:
+            - test_func_next
+        execution:
+          onExecute:
+            - printenv
+
+      - name: parallel_3
+        type: bash
+        triggeredBy:
+          steps:
+            - test_func_next
+        execution:
+          onExecute:
+            - printenv
+
+      - name: final_step
+        type: bash
+        triggeredBy:
+          steps:
+            - parallel_2
+            - parallel_1
+            - parallel_3
+        execution:
+          onExecute:
+            - printenv
+
+  - name: run_ci
+    steps:
+      - name: first_step
+        type: bash
+        requires:
+          resources:
+            - ric03uec_app
+        execution:
+          onExecute:
+            - printenv
