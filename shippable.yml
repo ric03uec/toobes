@@ -17,13 +17,28 @@ pipelines:
         configuration:
           affinityGroup: build
           #nodePool: kermit_centos_pool
+        setup:
+          runtime:            
+            type: image
+            image:
+              custom: 
+                name: drydock/u16nodall
+                tag:  v7.1.4
         requires:
           resources:
             - ric03uec_app
         execution:
           onExecute:
             - printenv
-            - echo "Some file content" >> $STEP_WORKSPACE_DIR/step_output.txt
+            - cd "$res_ric03uec_app_resourcePath"
+            - switch_env nodejs 0.12
+            - npm install
+            - cd tests
+            - ../node_modules/.bin/mocha --recursive "**/*.spec.js" -R mocha-junit-reporter --reporter-options mochaFile=../testresults.xml
+            - ../node_modules/.bin/istanbul --include-all-sources cover -root "../routes" ../node_modules/mocha/bin/_mocha -- -R spec-xunit-file --recursive "**/*.spec.js"
+            - ../node_modules/.bin/istanbul report cobertura --dir ../coverageReport
+            - cd .. && ls
+            - save_tests testresults.xml
 
       - name: test_func_next
         type: bash
