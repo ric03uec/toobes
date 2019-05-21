@@ -8,20 +8,19 @@ resources:
         only: master
     initialVersion:
       sha: master
-      
+
 pipelines:
-  - name: build_infra
+  - name: ric03uec
     steps:
       - name: bootstrap
         type: bash
         configuration:
           affinityGroup: build
-          #nodePool: kermit_centos_pool
         setup:
-          runtime:            
+          runtime:
             type: image
             image:
-              custom: 
+              custom:
                 name: drydock/u16nodall
                 tag:  v7.1.4
         requires:
@@ -29,7 +28,6 @@ pipelines:
             - ric03uec_app
         execution:
           onExecute:
-            - printenv
             - cd "$res_ric03uec_app_resourcePath"
             - switch_env nodejs 0.12
             - npm install
@@ -39,7 +37,7 @@ pipelines:
             - ../node_modules/.bin/istanbul report cobertura --dir ../coverageReport
             - cd .. && ls
             - save_tests testresults.xml
-            - add_run_variable build_infra_status="DONE"
+            - add_run_variable PERSISTENT_VARIABLE="DONE"
 
       - name: test_func_next
         type: bash
@@ -50,7 +48,7 @@ pipelines:
             - bootstrap
         execution:
           onExecute:
-            - printenv
+            - echo "next func done"
 
       - name: parallel_1
         type: bash
@@ -59,7 +57,6 @@ pipelines:
             - test_func_next
         execution:
           onExecute:
-            - printenv
             - echo $imageTag
 
       - name: parallel_2
@@ -69,7 +66,7 @@ pipelines:
             - test_func_next
         execution:
           onExecute:
-            - printenv
+            - echo "Done...."
 
       - name: parallel_3
         type: bash
@@ -78,7 +75,7 @@ pipelines:
             - test_func_next
         execution:
           onExecute:
-            - printenv
+            - echo "Done...."
 
       - name: final_step
         type: bash
@@ -89,15 +86,4 @@ pipelines:
             - parallel_3
         execution:
           onExecute:
-            - printenv
-
-  - name: run_ci
-    steps:
-      - name: first_step
-        type: bash
-        requires:
-          resources:
-            - ric03uec_app
-        execution:
-          onExecute:
-            - printenv
+            - echo "Done...."
