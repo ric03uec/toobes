@@ -39,6 +39,7 @@ pipelines:
             - ../node_modules/.bin/istanbul report cobertura --dir ../coverageReport
             - cd .. && ls
             - save_tests testresults.xml
+            - add_run_variable build_infra_status="DONE"
 
       - name: test_func_next
         type: bash
